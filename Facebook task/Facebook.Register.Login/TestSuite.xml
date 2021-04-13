@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite parallel="false" name="Regression-Suite">
+<parameter name ="browser" value="firefox"></parameter>
+  <test name="Login-Register Test">
+    <classes>
+    <class name="tests.UserLoginTest"/>
+      <class name="tests.UserRegisterationTest"/>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->

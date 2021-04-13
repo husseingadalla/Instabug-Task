@@ -1,0 +1,1057 @@
+{
+	"info": {
+		"_postman_id": "8649e914-e57e-4926-9440-54ecbf617323",
+		"name": "BestBuy API",
+		"description": "This collection is for testing the '/products' endpoint that is described here.\n\nPre-requisites:\n- run 'npm start' in command prompt to start the service from the application folder",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Products endpoint",
+			"item": [
+				{
+					"name": "Get all products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"products are returned in number matching the limit\", function () {\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"pm.expect(responseReturned.data.length).to.equal(responseReturned.limit);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"each product contains all info as expected\", function () {\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"for(let product of responseReturned.data){\r",
+									"    pm.expect(product.id).to.be.a('number');\r",
+									"    pm.expect(product.type).to.be.a('string');\r",
+									"    pm.expect(product.price).to.be.a('number');\r",
+									"    pm.expect(product.upc).to.be.a('string');\r",
+									"    pm.expect(product.shipping).to.be.a('number');\r",
+									"    pm.expect(product.description).to.be.a('string');\r",
+									"    pm.expect(product.manufacturer).to.be.a('string');\r",
+									"    \r",
+									"}\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all products - with valid limit",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"pm.test(\"products are returned in number matching the limit parameter\", function () {\r",
+									"var limit = pm.environment.get(\"productLimit\");\r",
+									"\r",
+									"pm.expect(responseReturned.data.length).to.equal(parseInt(limit));\r",
+									"});\r",
+									"var x = responseReturned.total - 1\r",
+									"pm.environment.set('productSkip',x)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"productLimit\", \"5\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products?$limit={{productLimit}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "$limit",
+									"value": "{{productLimit}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get all products - with valid skip",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"should skip all products and return only the last one\", function () {\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"pm.expect(responseReturned.data.length).to.equal(1);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/products?$skip={{productSkip}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "$skip",
+									"value": "{{productSkip}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - valid input",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"products is created successfully with correct fields\", function () {\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"var requestInfo = JSON.parse(pm.request.body);\r",
+									"pm.expect(responseReturned.id).to.exist;\r",
+									"pm.expect(responseReturned.name).to.equal(requestInfo.name);\r",
+									"pm.expect(responseReturned.type).to.equal(requestInfo.type);\r",
+									"pm.expect(responseReturned.price).to.equal(requestInfo.price);\r",
+									"pm.expect(responseReturned.shipping).to.equal(requestInfo.shipping);\r",
+									"pm.expect(responseReturned.upc).to.equal(requestInfo.upc);\r",
+									"pm.expect(responseReturned.description).to.equal(requestInfo.description);\r",
+									"pm.expect(responseReturned.manufacturer).to.equal(requestInfo.manufacturer);\r",
+									"pm.expect(responseReturned.model).to.equal(requestInfo.model);\r",
+									"pm.expect(responseReturned.url).to.equal(requestInfo.url);\r",
+									"pm.environment.set('productId',responseReturned.id);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing upc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing model",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - valid input",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"products is created successfully with correct fields\", function () {\r",
+									"var responseReturned = JSON.parse(responseBody);\r",
+									"var requestInfo = JSON.parse(pm.request.body);\r",
+									"pm.expect(responseReturned.id).to.exist;\r",
+									"pm.expect(responseReturned.name).to.equal(requestInfo.name);\r",
+									"pm.expect(responseReturned.type).to.equal(requestInfo.type);\r",
+									"pm.expect(responseReturned.price).to.equal(requestInfo.price);\r",
+									"pm.expect(responseReturned.shipping).to.equal(requestInfo.shipping);\r",
+									"pm.expect(responseReturned.upc).to.equal(requestInfo.upc);\r",
+									"pm.expect(responseReturned.description).to.equal(requestInfo.description);\r",
+									"pm.expect(responseReturned.manufacturer).to.equal(requestInfo.manufacturer);\r",
+									"pm.expect(responseReturned.model).to.equal(requestInfo.model);\r",
+									"pm.expect(responseReturned.url).to.equal(requestInfo.url);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \n  \"name\": \"newName\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get New product details",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product details - wrong id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \n  \"name\": \"newName\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/wrongId",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"wrongId"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing product id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing type",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing upc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"manufacturer\": \"string\",\n  \"model\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add new product - Missing model",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400\", function () {\r",
+									"    pm.response.to.have.status(400);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"string\",\n  \"type\": \"string\",\n  \"price\": 0,\n  \"shipping\": 0,\n  \"upc\": \"string\",\n  \"description\": \"string\",\n  \"manufacturer\": \"string\",\n  \"url\": \"string\",\n  \"image\": \"string\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product - valid id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product - non existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/products/{{productId}}",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"products",
+								"{{productId}}"
+							],
+							"query": [
+								{
+									"key": "product",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Endpoint",
+			"item": [
+				{
+					"name": "Get Version",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/HealthCheck",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"HealthCheck"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseURL}}/version",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"version"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
